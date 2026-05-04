@@ -89,8 +89,10 @@ namespace MvcWebApplication
 			services.AddTransient<IOrdersViewFunctions, OrdersViewFunctions>();
 			services.AddTransient<IHomeViewFunctions, HomeViewFunctions>();
 			services.AddTransient<IMenuListingViewFunctions, MenuListingViewFunctions>();
+            services.AddTransient<IShoppingViewFunctions, ShoppingViewFunctions>();
+            services.AddTransient<IShoppingCartViewFunctions, ShoppingCartsViewFunctions>();
 
-			services.AddControllersWithViews(); // MVC controllers
+            services.AddControllersWithViews(); // MVC controllers
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

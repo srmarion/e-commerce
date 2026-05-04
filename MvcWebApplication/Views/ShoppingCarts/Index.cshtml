@@ -1,0 +1,87 @@
+﻿@model MvcWebApplication.ViewModels.ShoppingCarts.IndexViewModel
+
+@{
+	ViewData["Title"] = "Index";
+}
+
+<h4>View Shopping Cart</h4>
+
+@{
+	if (!string.IsNullOrEmpty(Model.Message))
+	{
+		<div class="text-danger">@Model.Message</div>
+	}
+}
+
+<div>
+	
+</div>
+<p>
+	<a asp-action="CreateOrder" asp-controller="Orders" asp-route-userId="@Model.ShoppingCartSearch.UserId">Create Order</a>
+	<a asp-action="EmptyShoppingCart" asp-controller="ShoppingCarts" asp-route-userId="@Model.ShoppingCartSearch.UserId">Empty Cart</a>
+</p>
+<form asp-action="Search" method="post">
+	<div class="form-group">
+			<div class="divInline">
+				<label asp-for="ShoppingCartSearch.Category" class="control-label"></label>
+				<select asp-for="ShoppingCartSearch.Category" asp-items="Model.CategoryList" class="form-select inputInline">
+					<option value=""></option>
+				</select>
+				<button type="submit">Search</button>
+			</div>
+		
+	</div>
+</form>
+<p>
+<div>
+	Shopping Cart Total : @Model.ShoppingCartTotal.ToString("C2")
+	</p>
+</div>
+@if (Model.ShoppingCartList.Count > 0)
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Item Id</th>
+				<th>Name</th>
+				<th>Category</th>
+				<th>Cost</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ShoppingCartList)
+			{
+				<tr>
+					<td>
+						@item.ItemId
+					</td>
+					<td>
+						@item.Name
+					</td>
+					<td>
+						@item.Category
+					</td>
+					<td>
+						@item.Cost.ToString("C2")
+					</td>
+					<td>
+						<!-- asp-route-* attribute defines a GET parameter when calling a controller endpoint -->
+				
+						<a asp-action="Remove" asp-controller="ShoppingCarts" asp-route-cartId="@item.CartId">Remove</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+else
+{
+	<table class="displayList">
+		<tr>
+			<td style="width:100%;">
+				There are no items in your cart.
+			</td>
+		</tr>
+	</table>
+}

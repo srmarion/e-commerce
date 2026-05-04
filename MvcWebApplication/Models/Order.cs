@@ -28,6 +28,10 @@ namespace MvcWebApplication.Models
 		public DateTime OrderDate { get; set; }
 
 
+
+
+
+
 		public override string ToString()
 		{
 			return JsonSerializer.Serialize(this);

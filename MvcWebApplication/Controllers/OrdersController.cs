@@ -49,14 +49,14 @@ namespace MvcWebApplication.Controllers
 		public async Task<IActionResult> CreateOrder(string userId)
 		{
 			_logger.LogInformation($"CreateOrder was called with userId: {userId}");
+			
 
-
-			try
+            try
 			{
-				// code goes here
-				return View();
-			}
-			catch (Exception ex)
+				await _ordersViewFunctions.CreateOrder(userId, HttpContext);
+				return RedirectToAction("Index");
+            }
+            catch (Exception ex)
 			{
 				// Log the exception and return a friendly message back to the client
 				_logger.LogError(ex, "Error occurred creating order from the shopping cart.");
@@ -76,6 +76,7 @@ namespace MvcWebApplication.Controllers
 			try
 			{
 				// code goes here
+				await _ordersViewFunctions.GetUserOrders(userOrdersViewModel, HttpContext);
 			}
 			catch (Exception ex)
 			{
@@ -96,7 +97,10 @@ namespace MvcWebApplication.Controllers
 
 			try
 			{
-				// need code here
+				
+				await _ordersViewFunctions.GetOrderDetails(orderId, userId, getOrderDetailsViewModel, HttpContext);
+
+
 			}
 			catch (Exception ex)
 			{

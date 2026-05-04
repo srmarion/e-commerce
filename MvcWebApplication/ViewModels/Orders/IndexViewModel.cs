@@ -18,7 +18,7 @@ namespace MvcWebApplication.ViewModels.Orders
         public OrderSearch OrderSearch { get; set; }
 
         public override string ToString()
-        {
+        { 
             return JsonSerializer.Serialize(this);
         }
 

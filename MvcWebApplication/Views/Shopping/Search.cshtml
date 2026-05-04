@@ -1,4 +1,4 @@
-﻿@model MvcWebApplication.ViewModels.Shopping.IndexViewModel
+﻿@model MvcWebApplication.ViewModels.Shopping.SearchViewModel
 
 @{
 	ViewData["Title"] = "Index";
@@ -58,7 +58,7 @@
 					<td>
 						<!-- asp-route-* attribute defines a GET parameter when calling a controller endpoint -->
 				
-						<a asp-action="AddToCart" asp-controller="Shopping" asp-route-itemId="@item.ItemId">Add to Cart</a>
+						<a asp-action="AddToCart" asp-controller="Shopping" asp-route-itemId="@item.ItemId" asp-route-category="@Model.ShoppingListingSearch.Category">Add to Cart</a>
 					</td>
 				</tr>
 			}
@@ -70,7 +70,7 @@ else
 	<table class="displayList">
 		<tr>
 			<td style="width:100%;">
-				There are no menu listings.
+				There are no items in that category.
 			</td>
 		</tr>
 	</table>

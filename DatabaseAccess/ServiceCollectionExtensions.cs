@@ -16,6 +16,7 @@ namespace DatabaseAccess
             services.AddTransient<IOrderData, OrderData>();
             services.AddTransient<IUserData, UserData>();
             services.AddTransient<IMenuListingData, MenuListingData>();
+            services.AddTransient<IShoppingCartData, ShoppingCartData>();
 
             services.AddDbContext<MainAppDbContext>(o =>
                 o.UseSqlServer(connectionString)

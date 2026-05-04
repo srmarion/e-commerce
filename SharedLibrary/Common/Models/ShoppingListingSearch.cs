@@ -11,7 +11,9 @@ namespace SharedLibrary.Common.Models
 	{
 		public string Category { get; set; }
 
-		public override string ToString()
+		public bool isRedirectedFromAddToCart { get; set; } = false;
+
+        public override string ToString()
 		{
 			return JsonSerializer.Serialize(this);
 		}

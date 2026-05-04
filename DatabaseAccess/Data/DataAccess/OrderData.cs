@@ -53,15 +53,30 @@ namespace DatabaseAccess.Data.DataAccess
 		public async Task<OrderDAO> GetOrder(string orderId, string userId)
 		{
 			_logger.LogInformation($"GetOrder was called with orderId: {orderId}");
+            
+			var query = _mainAppDbContext.Orders.AsQueryable();
+			
+			var orderDAO = await query.Where(o => o.OrderId == orderId && o.UserId == userId).FirstAsync();
 
-			throw new System.NotImplementedException();
+			return orderDAO;
+
+
+            
 		}
 
 		public async Task<List<OrderDetailDAO>> GetOrderDetails(string orderId)
 		{
 			_logger.LogInformation($"GetOrderDetails was called with orderId: {orderId}");
 
-			throw new System.NotImplementedException();
+			var query = _mainAppDbContext.OrderDetails.AsQueryable();
+
+			query = query.Where(od => od.OrderId == orderId);
+
+			var orderDetailList = await query.ToListAsync<OrderDetailDAO>();
+
+			return orderDetailList;
+
+          
 		}
 
 		public async Task CreateOrder(OrderDAO orderDao, List<OrderDetailDAO> orderDetailDaoList)
@@ -70,7 +85,17 @@ namespace DatabaseAccess.Data.DataAccess
 
 			// The code should be written to perform a single transaction
 			// In other words, make all of the LINQ calls before calling SaveChanges()
-			throw new System.NotImplementedException();
+
+			await _mainAppDbContext.Orders.AddAsync(orderDao);
+
+			foreach(var orderDetailDao in orderDetailDaoList)
+			{
+				await _mainAppDbContext.OrderDetails.AddAsync(orderDetailDao);
+            }
+
+			await _mainAppDbContext.SaveChangesAsync();
+
+           
 		}
 	}
 }

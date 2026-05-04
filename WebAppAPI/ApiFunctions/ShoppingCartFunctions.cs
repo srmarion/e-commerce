@@ -1,4 +1,6 @@
-﻿using DatabaseAccess.Data.Interfaces;
+﻿using DatabaseAccess.Data.EntityModels;
+using DatabaseAccess.Data.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SharedLibrary.Common.Models;
 using SharedLibrary.DTO.ShoppingCart;
@@ -52,5 +54,38 @@ namespace WebAppAPI.ApiFunctions
 
 			return shoppingCartList;
 		}
-	}
+
+		public async Task CreateShoppingCart(ShoppingCartCreateRequestDTO shoppingCartCreateRequestDTO)
+		{
+			_logger.LogInformation($"CreateShoppingCart was called with shoppingCartCreateRequestDTO: {shoppingCartCreateRequestDTO}");
+			
+
+			var menuListing = await _menuListingData.GetMenuListing(shoppingCartCreateRequestDTO.ItemId);
+			var shoppingCartDAO = new ShoppingCartDAO()
+			{
+				CartId = 0,
+                UserId = shoppingCartCreateRequestDTO.UserId,
+				ItemId = shoppingCartCreateRequestDTO.ItemId,
+				Category = menuListing.Category,
+				Cost= menuListing.Cost,
+				Name = menuListing.Name
+
+				
+            };
+			await _shoppingCartData.CreateShoppingCart(shoppingCartDAO);
+        }
+
+        public async Task RemoveShoppingCartItem(ShoppingCartRemoveRequestDTO shoppingCartRemoveRequestDTO)
+		{
+			_logger.LogInformation($"RemoveShoppingCartItem was called with shoppingCartRemoveRequestDTO: {shoppingCartRemoveRequestDTO}");
+			await _shoppingCartData.RemoveShoppingCartItem(shoppingCartRemoveRequestDTO.CartId);
+        }
+        public async Task EmptyShoppingCart(ShoppingCartEmptyRequestDTO shoppingCartEmptyRequestDTO)
+		{
+            _logger.LogInformation($"EmptyShoppingCart was called with shoppingCartRemoveRequestDTO: {shoppingCartEmptyRequestDTO}");
+            await _shoppingCartData.EmptyShoppingCart(shoppingCartEmptyRequestDTO.UserId);
+
+        }
+
+    }
 }

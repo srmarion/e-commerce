@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using SharedLibrary.Common.Models;
 using SharedLibrary.DTO.Order;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace WebAppAPI.ApiFunctions
@@ -11,12 +12,14 @@ namespace WebAppAPI.ApiFunctions
 	public class OrdersFunctions : IOrdersFunctions
 	{
 		private IOrderData _orderData;
+		private IShoppingCartData _shoppingCartData;
 		private readonly ILogger<OrdersFunctions> _logger;
 
-		public OrdersFunctions(IOrderData orderData, ILogger<OrdersFunctions> logger)
+		public OrdersFunctions(IOrderData orderData, ILogger<OrdersFunctions> logger, IShoppingCartData shoppingCartData)
 		{
 			_orderData = orderData;
-			_logger = logger;
+			_shoppingCartData = shoppingCartData;
+            _logger = logger;
 			_logger.LogDebug("NLog injected into OrdersFunctions");
 		}
 
@@ -53,14 +56,89 @@ namespace WebAppAPI.ApiFunctions
 			return dtoList;
 		}
 
-		public Task<OrderGetResponseDTO> GetOrderDetails(OrderGetRequestDTO orderGetRequestDTO)
+		public async Task<OrderGetResponseDTO> GetOrderDetails(OrderGetRequestDTO orderGetRequestDTO)
 		{
-			throw new System.NotImplementedException();
+            _logger.LogInformation($"GetOrderDetails was called with orderGetRequestDTO: {orderGetRequestDTO}");
+			//this was the issue. i had to swap arguments.
+			var orderDAO = await _orderData.GetOrder(orderGetRequestDTO.OrderId, orderGetRequestDTO.UserId);
+
+			OrderGetResponseDTO orderGetResponseDTO = new OrderGetResponseDTO()
+			{
+				UserId = orderDAO.UserId,
+				OrderId = orderDAO.OrderId,
+				OrderTotal = orderDAO.OrderTotal,
+				OrderDate = orderDAO.OrderDate
+            };
+
+			var orderDetailsDAO = await _orderData.GetOrderDetails(orderGetRequestDTO.OrderId);
+
+            foreach (var orderDetail in orderDetailsDAO)
+			{
+				var dtoObj = new OrderDetailGetResponseDTO()
+				{
+					OrderId = orderDetail.OrderId,
+					OrderDetailId = orderDetail.OrderDetailId,
+					ItemId = orderDetail.ItemId,
+					Category = orderDetail.Category,
+					Name = orderDetail.Name,
+					Cost = orderDetail.Cost,
+				};
+				orderGetResponseDTO.OrderDetails.Add(dtoObj);
+            }
+
+			return orderGetResponseDTO;
+                
 		}
 
-		public Task CreateOrder(OrderCreateRequestDTO orderCreateRequestDTO)
+		public async Task CreateOrder(OrderCreateRequestDTO orderCreateRequestDTO)
 		{
-			throw new System.NotImplementedException();
-		}
+            _logger.LogInformation($"CreateOrder was called with orderCreateRequestDTO: {orderCreateRequestDTO}");
+
+			var orderDao = new OrderDAO();
+			orderDao.UserId = orderCreateRequestDTO.UserId;
+			orderDao.OrderId = System.Guid.NewGuid().ToString();
+			orderDao.OrderDate = System.DateTime.Now;
+
+			var shoppingCartSearch = new ShoppingCartSearch()
+			{
+				UserId = orderCreateRequestDTO.UserId,
+				Category = string.Empty,
+			};
+            var shoppingCart = await _shoppingCartData.GetShoppingCart(shoppingCartSearch);
+
+			var orderDetailsList = new List<OrderDetailDAO>();
+
+			var orderTotal = 0m;
+
+            if (shoppingCart.Any())
+			{
+				foreach (var item in shoppingCart)
+				{
+					var orderDetail = new OrderDetailDAO() 
+					{	
+						OrderId = orderDao.OrderId,
+						OrderDetailId = System.Guid.NewGuid().ToString(),
+						ItemId = item.ItemId,
+						Category = item.Category,
+						Name = item.Name,
+						Cost= item.Cost
+						
+						
+					};
+
+					orderTotal += item.Cost;
+					orderDetailsList.Add(orderDetail);
+
+                }
+				orderDao.OrderTotal = orderTotal;
+
+            }
+			
+
+
+            await _orderData.CreateOrder(orderDao, orderDetailsList);
+
+			await _shoppingCartData.EmptyShoppingCart(orderCreateRequestDTO.UserId);
+        }
 	}
 }

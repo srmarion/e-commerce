@@ -1,10 +1,10 @@
-﻿@model MvcWebApplication.ViewModels.Shopping.IndexViewModel
+﻿@model MvcWebApplication.ViewModels.ShoppingCarts.SearchViewModel
 
 @{
 	ViewData["Title"] = "Index";
 }
 
-<h4>Shop For Something</h4>
+<h4>View Shopping Cart</h4>
 
 @{
 	if (!string.IsNullOrEmpty(Model.Message))
@@ -13,21 +13,22 @@
 	}
 }
 
-@* <p>
-	<a asp-action="New">Create New</a>
-</p> *@
+<p>
+	<a asp-action="CreateOrder" asp-controller="Orders" asp-route-userId="@Model.ShoppingCartSearch.UserId">Create Order</a>
+	<a asp-action="EmptyShoppingCart" asp-controller="ShoppingCarts" asp-route-userId="@Model.ShoppingCartSearch.UserId">Empty Cart</a>
+</p> 
 <form asp-action="Search" method="post">
 	<div class="form-group">
 		<div class="divInline">
-			<label asp-for="ShoppingListingSearch.Category" class="control-label"></label>
-			<select asp-for="ShoppingListingSearch.Category" asp-items="Model.CategoryList" class="form-select inputInline">
+			<label asp-for="ShoppingCartSearch.Category" class="control-label"></label>
+			<select asp-for="ShoppingCartSearch.Category" asp-items="Model.CategoryList" class="form-select inputInline">
 				<option value=""></option>
 			</select>
 			<button type="submit">Search</button>
 		</div>
 	</div>
 </form>
-@if (Model.MenuListingList.Count > 0)
+@if (Model.ShoppingCartList.Count > 0)
 {
 	<table class="table">
 		<thead>
@@ -40,7 +41,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.MenuListingList)
+			@foreach (var item in Model.ShoppingCartList)
 			{
 				<tr>
 					<td>
@@ -58,7 +59,7 @@
 					<td>
 						<!-- asp-route-* attribute defines a GET parameter when calling a controller endpoint -->
 				
-						<a asp-action="AddToCart" asp-controller="Shopping" asp-route-itemId="@item.ItemId">Add to Cart</a>
+						<a asp-action="Remove" asp-controller="ShoppingCarts" asp-route-cartId="@item.CartId">Remove</a>
 					</td>
 				</tr>
 			}
@@ -70,7 +71,7 @@ else
 	<table class="displayList">
 		<tr>
 			<td style="width:100%;">
-				There are no menu listings.
+				There are no items in that category.
 			</td>
 		</tr>
 	</table>

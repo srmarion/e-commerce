@@ -3,20 +3,19 @@ using MvcWebApplication.Models;
 using SharedLibrary.Common.Models;
 using System.Collections.Generic;
 
-namespace MvcWebApplication.ViewModels.MenuListings
+namespace MvcWebApplication.ViewModels.Shopping
 {
 	public class SearchViewModel : BaseViewModel
 	{
 		public SearchViewModel()
 		{
-			MenuListingSearch = new MenuListingSearch();
+			ShoppingListingSearch = new ShoppingListingSearch();
 		}
 
 		public List<MenuListing> MenuListingList { get; set; } = new List<MenuListing>();
 
 		public List<SelectListItem> CategoryList { get; set; } = new List<SelectListItem>();
 
-		public MenuListingSearch MenuListingSearch { get; set; }
-
+		public ShoppingListingSearch ShoppingListingSearch { get; set; }
 	}
 }

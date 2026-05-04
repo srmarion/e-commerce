@@ -29,10 +29,4 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ViewModels\ShoppingCarts\" />
-    <Folder Include="ViewModels\Shopping\" />
-    <Folder Include="Views\ShoppingCarts\" />
-  </ItemGroup>
-
 </Project>

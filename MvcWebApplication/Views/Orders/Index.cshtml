@@ -62,6 +62,9 @@
 					<td>
 						@order.OrderDate
 					</td>
+					<td>
+                                <a asp-action="GetOrderDetails" asp-controller="Orders" asp-route-orderId="@order.OrderId" asp-route-userId="@order.UserId" asp-route-searchSource="Index">View Order Details</a>
+					</td>
 				</tr>
 			}
 		</tbody>

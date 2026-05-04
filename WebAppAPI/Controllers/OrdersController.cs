@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SharedLibrary.DTO.MenuListing;
 using SharedLibrary.DTO.Order;
 using System;
 using System.Net.Http;
@@ -54,16 +55,44 @@ namespace WebAppAPI.Apis
 		[Route("CreateOrder")]
 		public async Task<ActionResult> CreateOrder(OrderCreateRequestDTO orderCreateRequestDTO)
 		{
-			return Ok();
-		}
+			_logger.LogInformation($"CreateOrder was called with orderCreateRequestDTO: {orderCreateRequestDTO}");
+            var user = HttpContext.User;
+            var token = HttpContext.GetTokenAsync("access_token").Result;
+            var cookies = HttpContext.Request.Cookies;
+            try
+            {
+                await _ordersFunction.CreateOrder(orderCreateRequestDTO);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred getting order details.");
+                var responseObject = new { responseText = ex.Message }; // Not necessarily a friendly message
+                return StatusCode(StatusCodes.Status500InternalServerError, responseObject);
+            }
+        }
 
-		[Authorize(Roles = "User, Admin")] // prefer to use enums, but requires custom attribute
+        [Authorize(Roles = "User, Admin")] // prefer to use enums, but requires custom attribute
 		[HttpPost]
 		[Route("GetOrder")]
 		public async Task<ActionResult> GetOrderDetails(OrderGetRequestDTO orderGetRequestDTO)
 		{
-			return Ok();
-		}
+            _logger.LogInformation($"GetOrderDetails was called with orderGetRequestDTO: {orderGetRequestDTO}");
+            var user = HttpContext.User;
+            var token = HttpContext.GetTokenAsync("access_token").Result;
+            var cookies = HttpContext.Request.Cookies;
+            try
+            {
+                var result = await _ordersFunction.GetOrderDetails(orderGetRequestDTO);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred getting order details.");
+                var responseObject = new { responseText = ex.Message }; // Not necessarily a friendly message
+                return StatusCode(StatusCodes.Status500InternalServerError, responseObject);
+            }
+        }
 
 		[Authorize(Roles = "User, Admin")] // prefer to use enums, but requires custom attribute
 		[HttpGet]
