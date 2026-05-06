@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MvcWebApplication.Models;
@@ -27,11 +29,14 @@ namespace MvcWebApplication.ViewFunctions
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHomeViewFunctions _homeViewFunctions;
 
-        public OrdersViewFunctions(ILogger<OrdersViewFunctions> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+
+        public OrdersViewFunctions(ILogger<OrdersViewFunctions> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IHomeViewFunctions homeViewFunctions)
 		{
 			_httpClientFactory = httpClientFactory;
 			_httpContextAccessor = httpContextAccessor;
+            _homeViewFunctions = homeViewFunctions;
 			_logger = logger;
 			_configuration = configuration;
 			_logger.LogDebug("NLog injected into OrdersViewFunctions");
@@ -221,6 +226,66 @@ namespace MvcWebApplication.ViewFunctions
             var user = httpContext.User;
 
 
+            var orderSearchDto = new OrderSearchRequestDTO()
+            {
+
+                UserId = userOrdersViewModel.OrderSearch.UserId,
+                BeginOrderDate = userOrdersViewModel.OrderSearch.BeginOrderDate,
+                EndOrderDate = userOrdersViewModel.OrderSearch.EndOrderDate
+            };
+
+            var jsonSearch = JsonSerializer.Serialize(orderSearchDto);
+            var data = new StringContent(jsonSearch, Encoding.UTF8, "application/json");
+
+            var baseAddress = new Uri(_configuration.GetValue<string>("Misc:BaseWebApiUrl"));
+            var response = String.Empty; // no ""
+
+            // Create instance of HttpClientFacory
+            var client = _httpClientFactory.CreateClient("LocalClient");
+            client.BaseAddress = baseAddress;
+
+            // Add authorization header
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            // To add a cookie to the request instead of using authorization header
+            //client.DefaultRequestHeaders.Add("Cookie", $"X-Access-Token={token}");
+            //client.DefaultRequestHeaders.Add("Cookie", $"X-Usernam={user.Identity.Name}");
+
+            HttpResponseMessage httpResponse = await client.PostAsync("/api/Orders/GetOrders", data);
+            httpResponse.EnsureSuccessStatusCode();
+            if (httpResponse.IsSuccessStatusCode)
+            {
+                response = await httpResponse.Content.ReadAsStringAsync();
+            }
+
+            var results = JsonSerializer.Deserialize<List<OrderSearchResponseDTO>>(response);
+
+            // Not good practice to pass DTO into upper layers - separation of concerns
+            // Thus need to convert DTO into another class used within a view model
+            foreach (var orderDto in results)
+            {
+                var order = new Order()
+                {
+                    OrderId = orderDto.OrderId,
+                    UserId = orderDto.UserId,
+                    OrderDate = orderDto.OrderDate,
+                    OrderTotal = orderDto.OrderTotal
+                };
+
+                userOrdersViewModel.OrderList.Add(order);
+            }
+            var users = await _homeViewFunctions.GetAllUsers();
+
+            foreach(var u in users)
+            {
+                //userOrdersViewModel.UserList.Add(new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem() { Text = user.Username, Value = user.Id });
+
+                userOrdersViewModel.UserList.Add(new SelectListItem(u.UserName, u.Id));
+            }
+
+
+
+            return;
 
 
 

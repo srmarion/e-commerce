@@ -63,4 +63,14 @@ else
 	</tr>
 </table>
 }
+@{
+	if(Model.SearchSource == "UserOrders")
+	{
+		<a asp-controller="Orders" asp-action="UserOrders">Return to User Orders</a>
+	}
+	else
+	{
+		<a asp-controller="Orders" asp-action="Index">Return to Orders</a>
+	}
+}
 

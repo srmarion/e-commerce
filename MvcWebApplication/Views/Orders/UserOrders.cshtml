@@ -1,7 +1,90 @@
-﻿@{
-    ViewData["Title"] = "User Orders";
+﻿@model MvcWebApplication.ViewModels.Orders.UserOrdersViewModel
+
+@{
+	ViewData["Title"] = "User Orders";
 }
 
-<h4>@ViewData["Title"]</h4>
+<h4>User Orders</h4>
 
-<p>Admins use this page to search user orders.</p>
+@{
+	if (Model.Message.Length > 0)
+	{
+		<div class="text-danger">@Model.Message</div>
+	}
+}
+
+<form id="Search" asp-controller="Orders" asp-action="UserOrders" method='POST' autocomplete="off">
+	<div class="form-group">
+		<div class="divInline">
+			<div style="padding-bottom: 5px;">
+				<label asp-for="OrderSearch.BeginOrderDate" class="control-label"></label>
+				<input type="date" asp-for="OrderSearch.BeginOrderDate" asp-format="{0:yyyy-MM-dd}">
+				<label asp-for="OrderSearch.EndOrderDate" class="control-label"></label>
+				<input type="date" asp-for="OrderSearch.EndOrderDate" asp-format="{0:yyyy-MM-dd}">
+				<label asp-for="OrderSearch.UserId" class="control-label"></label>
+				<select asp-for="OrderSearch.UserId" asp-items="Model.UserList" class="form-select inputInline">
+					<option value=""></option>
+				</select>
+				
+				<button type="submit">Search</button>
+			</div>
+
+
+		</div>
+	</div>
+</form>
+
+@if (Model.OrderList.Count > 0)
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>
+					User Id
+				</th>
+				<th style="padding-right: 15px">
+					OrderId
+				</th>
+				<th style="padding-right: 15px">
+					Order Total
+				</th>
+				<th style="padding-right: 15px">
+					Order Date
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var order in Model.OrderList)
+			{
+				<tr>
+					<td>
+						@order.UserId
+					</td>
+					<td>
+						@order.OrderId
+					</td>
+					<td>
+						@order.OrderTotal
+					</td>
+					<td>
+						@order.OrderDate
+					</td>
+					<td>
+						<a asp-action="GetOrderDetails" asp-controller="Orders" asp-route-orderId="@order.OrderId" asp-route-userId="@order.UserId" asp-route-searchSource="UserOrders">View Order Details</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+else
+{
+	<table class="displayList">
+		<tr>
+			<td style="width:100%;">
+				There are no orders.
+			</td>
+		</tr>
+	</table>
+}
+

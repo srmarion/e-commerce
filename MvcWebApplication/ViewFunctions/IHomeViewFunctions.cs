@@ -11,6 +11,6 @@ namespace MvcWebApplication.ViewFunctions
 	{
 		public Task Login(HomeLoginViewModel homeLoginViewModel);
 
-		public Task<List<AspNetUserResponseDTO>> GetAllUsers(HttpContext httpContext);
+		public Task<List<AspNetUserResponseDTO>> GetAllUsers();
 	}
 }

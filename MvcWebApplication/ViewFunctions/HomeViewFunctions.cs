@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MvcWebApplication.ViewModels.Home;
@@ -8,9 +9,11 @@ using SharedLibrary.DTO.AspNetUser;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MvcWebApplication.ViewFunctions
 {
@@ -38,7 +41,7 @@ namespace MvcWebApplication.ViewFunctions
 			var user = _httpContextAccessor.HttpContext.User;
 
 			var baseAddress = new Uri(_configuration.GetValue<string>("Misc:BaseWebApiUrl"));
-			var response = String.Empty; // no ""
+			var response = string.Empty; // no ""
 
 			// Create instance of HttpClientFacory
 			var client = _httpClientFactory.CreateClient("LocalClient");
@@ -76,9 +79,36 @@ namespace MvcWebApplication.ViewFunctions
 			return;
 		}
 
-		public async Task<List<AspNetUserResponseDTO>> GetAllUsers(HttpContext httpContext)
+		public async Task<List<AspNetUserResponseDTO>> GetAllUsers()
 		{
-			throw new NotImplementedException();
-		}
-	}
+            _logger.LogInformation($"GetAllUsers was called");
+
+            // Access HttpContext via injected IHttpContextAccessor
+            var token = _httpContextAccessor.HttpContext.GetTokenAsync("access_token").Result;
+            var user = _httpContextAccessor.HttpContext.User;
+
+            var baseAddress = new Uri(_configuration.GetValue<string>("Misc:BaseWebApiUrl"));
+            var response = string.Empty; // no ""
+
+            // Create instance of HttpClientFacory
+            var client = _httpClientFactory.CreateClient("LocalClient");
+            client.BaseAddress = baseAddress;
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage httpResponse = await client.GetAsync("/api/Users/GetAllUsers");
+            httpResponse.EnsureSuccessStatusCode();	
+            if (httpResponse.IsSuccessStatusCode)
+            {
+                response = await httpResponse.Content.ReadAsStringAsync();
+            }
+
+            var results = JsonSerializer.Deserialize<List<AspNetUserResponseDTO>>(response);
+
+			return results;
+
+
+
+        }
+    }
 }
